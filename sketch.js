@@ -3,9 +3,10 @@ let resultText = "Press Roll to get a Regalia!";
 let rolling = false;
 let rollTime = 0;
 let finalResult = "";
-const rollDuration = 2000; // Rolling animation duration (ms)
-let catImg;
-let catX, catY, catSpeedX, catSpeedY;
+const rollDuration = 2000;
+let images = [];
+let objects = [];
+let bgMusic;
 
 const regaliaChances = [
   { name: "Useless Regalia", chance: 1 / 6 },
@@ -16,11 +17,13 @@ const regaliaChances = [
   { name: "No Regalia", chance: 1 - (1 / 6 + 1 / 15 + 1 / 40 + 1 / 75 + 1 / 150) }
 ];
 
-
 function preload() {
-  catImg = loadImage("artworks-vog58LBUoWgkjgPZ-6Ru4Hg-t500x500.jpg");
+  images.push(loadImage("artworks-vog58LBUoWgkjgPZ-6Ru4Hg-t500x500.jpg"));
+  images.push(loadImage("knorp.png"));
+  images.push(loadImage("luna.png"));
+  images.push(loadImage("elias.png"));
+  bgMusic = loadSound("wii.mp3");
 }
-
 
 function setup() {
   createCanvas(1920, 1080);
@@ -29,12 +32,16 @@ function setup() {
   rollButton = createButton("Roll");
   rollButton.position(width / 2 - 50, height - 100);
   rollButton.mousePressed(startRolling);
+  bgMusic.loop();
   
-  // Cat image initial position and speed
-  catX = width / 2;
-  catY = height - 150;
-  catSpeedX = 5;
-  catSpeedY = -5;
+  for (let i = 0; i < images.length; i++) {
+    objects.push({
+      x: random(width - 100),
+      y: height - 150,
+      speedX: random(3, 6) * (random() > 0.5 ? 1 : -1),
+      speedY: random(-6, -3)
+    });
+  }
 }
 
 function draw() {
@@ -55,7 +62,7 @@ function draw() {
   
   text(resultText, width / 2, height / 2);
   drawRollingEffect();
-  moveAndBounceCat();
+  moveAndBounceObjects();
 }
 
 function startRolling() {
@@ -95,22 +102,25 @@ function drawRollingEffect() {
   }
 }
 
-function moveAndBounceCat() {
-  if (catImg) {
-    image(catImg, catX, catY, 100, 100);
+function moveAndBounceObjects() {
+  for (let i = 0; i < objects.length; i++) {
+    let obj = objects[i];
+    if (images[i]) {
+      image(images[i], obj.x, obj.y, 100, 100);
+    }
+    
+    obj.x += obj.speedX;
+    obj.y += obj.speedY;
+    
+    if (obj.x <= 0 || obj.x >= width - 100) {
+      obj.speedX *= -1;
+    }
+    
+    if (obj.y >= height - 150) {
+      obj.speedY = -random(5, 10);
+    }
+    obj.speedY += 0.3;
   }
-  
-  catX += catSpeedX;
-  catY += catSpeedY;
-  
-  if (catX <= 0 || catX >= width - 100) {
-    catSpeedX *= -1;
-  }
-  
-  if (catY >= height - 150) {
-    catSpeedY = -random(5, 10);
-  }
-  catSpeedY += 0.3; // Simulating gravity
 }
 
 function drawRainbowText(textString, x, y) {
